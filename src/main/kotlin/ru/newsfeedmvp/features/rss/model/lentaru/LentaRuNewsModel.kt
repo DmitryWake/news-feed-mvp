@@ -8,7 +8,7 @@ import nl.adaptivity.xmlutil.serialization.XmlElement
 data class LentaRuNewsModel(
     val enclosure: Enclosure,
     @XmlElement(true)
-    val author: String,
+    val author: String?,
     @XmlElement(true)
     val link: String,
     @XmlElement(true)
