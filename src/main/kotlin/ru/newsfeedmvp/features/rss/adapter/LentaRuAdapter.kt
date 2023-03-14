@@ -13,8 +13,7 @@ class LentaRuAdapter : RSSFeedAdapter {
 
 
     private fun getNewsModel(inputModel: LentaRuNewsModel): NewsModel = NewsModel(
-        title = inputModel.title,
-        description = inputModel.description,
+        newsBody = inputModel.title + " " + inputModel.description,
         imageUrl = inputModel.enclosure.url,
         sourceUrl = inputModel.link
     )

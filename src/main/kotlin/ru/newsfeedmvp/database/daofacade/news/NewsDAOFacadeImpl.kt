@@ -1,8 +1,7 @@
-package ru.newsfeedmvp.database.daofacade
+package ru.newsfeedmvp.database.daofacade.news
 
 import org.jetbrains.exposed.sql.*
 import ru.newsfeedmvp.database.DatabaseFactory.dbQuery
-import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacade
 import ru.newsfeedmvp.database.table.NewsTable
 import ru.newsfeedmvp.features.rss.model.base.NewsModel
 
@@ -21,21 +20,15 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
 
     override suspend fun editEntity(model: NewsModel): Boolean = dbQuery {
         NewsTable.update({ NewsTable.id eq requireNotNull(model.id) }) {
-            it[title] = model.title
-            it[description] = model.description
+            it[newsBody] = model.newsBody
             it[imageUrl] = model.imageUrl
             it[sourceUrl] = model.sourceUrl
         } > 0
     }
 
-    /*override suspend fun deleteArticle(id: Int): Boolean {
-        TODO("Not yet implemented")
-    }*/
-
     override suspend fun addNewEntity(model: NewsModel): NewsModel? = dbQuery {
         val insertStatement = NewsTable.insert {
-            it[title] = model.title
-            it[description] = model.description
+            it[newsBody] = model.newsBody
             it[imageUrl] = model.imageUrl
             it[sourceUrl] = model.sourceUrl
         }
@@ -44,8 +37,7 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
 
     private fun resultRowToNewsModel(row: ResultRow) = NewsModel(
         id = row[NewsTable.id],
-        title = row[NewsTable.title],
-        description = row[NewsTable.description],
+        newsBody = row[NewsTable.newsBody],
         imageUrl = row[NewsTable.imageUrl],
         sourceUrl = row[NewsTable.sourceUrl]
     )

@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import ru.newsfeedmvp.core.client.getMainHttpClient
-import ru.newsfeedmvp.database.daofacade.NewsDAOFacadeImpl
+import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacadeImpl
 import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacade
 import ru.newsfeedmvp.features.rss.adapter.LentaRuAdapter
 import ru.newsfeedmvp.features.rss.adapter.RSSFeedAdapter

@@ -7,5 +7,8 @@ import kotlinx.coroutines.withContext
 import ru.newsfeedmvp.features.rss.RssWorker
 
 fun Application.runStartingTasks() {
-    launch { RssWorker.getInstance().loadNews() }
+    launch {
+        // Pause working with rss
+        // RssWorker.getInstance().loadNews()
+    }
 }
