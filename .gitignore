@@ -34,3 +34,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+/src/main/resources/vkapikey/vkapikey.txt
+/src/main/resources/database/database_password

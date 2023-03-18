@@ -3,7 +3,7 @@ package ru.newsfeedmvp.database.daofacade.news
 import org.jetbrains.exposed.sql.*
 import ru.newsfeedmvp.database.DatabaseFactory.dbQuery
 import ru.newsfeedmvp.database.table.NewsTable
-import ru.newsfeedmvp.features.rss.model.base.NewsModel
+import ru.newsfeedmvp.features.datasource.rss.model.base.NewsModel
 
 class NewsDAOFacadeImpl : NewsDAOFacade {
     override suspend fun getBySourceUrl(sourceUrl: String): NewsModel? = dbQuery {
@@ -21,15 +21,16 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
     override suspend fun editEntity(model: NewsModel): Boolean = dbQuery {
         NewsTable.update({ NewsTable.id eq requireNotNull(model.id) }) {
             it[newsBody] = model.newsBody
-            it[imageUrl] = model.imageUrl
+            it[imageUrl] = model.imageUrl.orEmpty()
             it[sourceUrl] = model.sourceUrl
         } > 0
     }
 
     override suspend fun addNewEntity(model: NewsModel): NewsModel? = dbQuery {
         val insertStatement = NewsTable.insert {
+            model.id?.let { mId -> it[id] = mId }
             it[newsBody] = model.newsBody
-            it[imageUrl] = model.imageUrl
+            it[imageUrl] = model.imageUrl.orEmpty()
             it[sourceUrl] = model.sourceUrl
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToNewsModel)

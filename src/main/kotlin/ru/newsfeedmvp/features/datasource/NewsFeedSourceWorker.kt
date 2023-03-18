@@ -1,4 +1,4 @@
-package ru.newsfeedmvp.features.rss
+package ru.newsfeedmvp.features.datasource
 
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -8,19 +8,18 @@ import kotlinx.coroutines.withContext
 import ru.newsfeedmvp.core.client.getMainHttpClient
 import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacadeImpl
 import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacade
-import ru.newsfeedmvp.features.rss.adapter.LentaRuAdapter
-import ru.newsfeedmvp.features.rss.adapter.RSSFeedAdapter
-import ru.newsfeedmvp.features.rss.model.base.NewsModel
+import ru.newsfeedmvp.features.datasource.rest.interactor.VkInteractor
+import ru.newsfeedmvp.features.datasource.rss.model.base.NewsModel
 
-class RssWorker(
-    private val adapters: Map<Url, RSSFeedAdapter>,
+class NewsFeedSourceWorker(
+    private val interactors: List<NewsFeedInteractor>,
     private val newsDAOFacade: NewsDAOFacade
 ) {
     suspend fun loadNews() = withContext(Dispatchers.IO) {
         while (true) {
-            adapters.forEach { (url, adapter) ->
-                val resultList = kotlin.runCatching { adapter.getNewsFeedModel(getMainHttpClient().get(url)) }
-                    .onFailure { println(it) }.getOrNull()
+            interactors.forEach { interactor ->
+                val resultList = kotlin.runCatching { interactor.getNewsFeedModel() }
+                    .onFailure { it.printStackTrace() }.getOrNull()
 
                 resultList?.let { processResult(it) }
 
@@ -33,8 +32,11 @@ class RssWorker(
 
     private suspend fun processResult(resultList: List<NewsModel>) {
         resultList.forEach { model ->
-            if (newsDAOFacade.getBySourceUrl(model.sourceUrl) == null) {
+            val id = model.id?.let { newsDAOFacade.entity(it) }?.id ?: newsDAOFacade.getBySourceUrl(model.sourceUrl)?.id
+            if (id == null) {
                 newsDAOFacade.addNewEntity(model)
+            } else {
+                newsDAOFacade.editEntity(model.copy(id = id))
             }
         }
     }
@@ -43,13 +45,14 @@ class RssWorker(
         /**
          * Создать core реализацию воркера
          */
-        fun getInstance() = RssWorker(BASE_ADAPTERS_MAP, BASE_NEWS_DAO)
+        fun getInstance() = NewsFeedSourceWorker(BASE_ADAPTERS_MAP, BASE_NEWS_DAO)
 
         /**
          * Базовый ассоциативный массив адаптеров и соответствующих им адресов
          */
-        val BASE_ADAPTERS_MAP = mapOf(
-            Url("https://lenta.ru/rss/news") to LentaRuAdapter()
+        val BASE_ADAPTERS_MAP = listOf<NewsFeedInteractor>(
+            // Url("https://lenta.ru/rss/news") to LentaRuAdapter()
+            VkInteractor()
         )
 
         /**

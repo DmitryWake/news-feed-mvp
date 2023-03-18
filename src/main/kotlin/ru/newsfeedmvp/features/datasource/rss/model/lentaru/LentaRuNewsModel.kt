@@ -1,4 +1,4 @@
-package ru.newsfeedmvp.features.rss.model.lentaru
+package ru.newsfeedmvp.features.datasource.rss.model.lentaru
 
 import kotlinx.serialization.SerialName
 import nl.adaptivity.xmlutil.serialization.XmlElement
