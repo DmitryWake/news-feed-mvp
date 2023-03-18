@@ -23,6 +23,11 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
             it[newsBody] = model.newsBody
             it[imageUrl] = model.imageUrl.orEmpty()
             it[sourceUrl] = model.sourceUrl
+            it[date] = model.date
+            it[viewsCount] = model.viewsCount
+            it[likesCount] = model.likesCount
+            it[repostsCount] = model.repostsCount
+            it[commentsCount] = model.commentsCount
         } > 0
     }
 
@@ -32,6 +37,11 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
             it[newsBody] = model.newsBody
             it[imageUrl] = model.imageUrl.orEmpty()
             it[sourceUrl] = model.sourceUrl
+            it[date] = model.date
+            it[viewsCount] = model.viewsCount
+            it[likesCount] = model.likesCount
+            it[repostsCount] = model.repostsCount
+            it[commentsCount] = model.commentsCount
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToNewsModel)
     }
@@ -40,6 +50,11 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
         id = row[NewsTable.id],
         newsBody = row[NewsTable.newsBody],
         imageUrl = row[NewsTable.imageUrl],
-        sourceUrl = row[NewsTable.sourceUrl]
+        sourceUrl = row[NewsTable.sourceUrl],
+        date = row[NewsTable.date],
+        viewsCount = row[NewsTable.viewsCount],
+        likesCount = row[NewsTable.likesCount],
+        repostsCount = row[NewsTable.repostsCount],
+        commentsCount = row[NewsTable.commentsCount]
     )
 }

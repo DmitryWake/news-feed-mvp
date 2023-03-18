@@ -17,13 +17,17 @@ data class VkFeedResponse(
         val comments: Comments? = Comments(),
         val type: String? = null,
         val attachments: ArrayList<Attachments> = arrayListOf(),
-        val date: Int? = null,
+        val date: Long? = null,
         val id: Int,
         val likes: Likes? = Likes(),
         val postType: String? = null,
         val reposts: Reposts? = null,
-        val text: String
+        val text: String? = null,
+        val views: Views? = null
     )
+
+    @Serializable
+    data class Views(var count: Int? = null)
 
     @Serializable
     data class Reposts(
