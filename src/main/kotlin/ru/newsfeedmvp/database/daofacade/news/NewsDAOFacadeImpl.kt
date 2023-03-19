@@ -28,6 +28,7 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
             it[likesCount] = model.likesCount
             it[repostsCount] = model.repostsCount
             it[commentsCount] = model.commentsCount
+            it[reaction] = model.reactionType
         } > 0
     }
 
@@ -42,6 +43,7 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
             it[likesCount] = model.likesCount
             it[repostsCount] = model.repostsCount
             it[commentsCount] = model.commentsCount
+            it[reaction] = model.reactionType
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToNewsModel)
     }
@@ -55,6 +57,7 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
         viewsCount = row[NewsTable.viewsCount],
         likesCount = row[NewsTable.likesCount],
         repostsCount = row[NewsTable.repostsCount],
-        commentsCount = row[NewsTable.commentsCount]
+        commentsCount = row[NewsTable.commentsCount],
+        reactionType = row[NewsTable.reaction]
     )
 }

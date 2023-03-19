@@ -1,13 +1,10 @@
 package ru.newsfeedmvp.features.datasource
 
-import io.ktor.client.request.*
-import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import ru.newsfeedmvp.core.client.getMainHttpClient
-import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacadeImpl
 import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacade
+import ru.newsfeedmvp.database.daofacade.news.NewsDAOFacadeImpl
 import ru.newsfeedmvp.features.datasource.rest.interactor.VkInteractor
 import ru.newsfeedmvp.features.datasource.rss.model.base.NewsModel
 
@@ -22,8 +19,6 @@ class NewsFeedSourceWorker(
                     .onFailure { it.printStackTrace() }.getOrNull()
 
                 resultList?.let { processResult(it) }
-
-                println(newsDAOFacade.allEntities().size)
             }
 
             delay(REPEAT_TIME_MS)
@@ -60,6 +55,6 @@ class NewsFeedSourceWorker(
          */
         val BASE_NEWS_DAO = NewsDAOFacadeImpl()
 
-        private const val REPEAT_TIME_MS = 30 * 60 * 1000L
+        private const val REPEAT_TIME_MS = 60 * 60 * 1000L
     }
 }
