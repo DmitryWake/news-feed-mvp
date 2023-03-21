@@ -38,3 +38,4 @@ out/
 /src/main/resources/vkapikey/vkapikey.txt
 /src/main/resources/database/database_password
 /src/main/resources/huggingface/huggingfacekey
+/src/main/resources/authtokens/BearerMobileAuth
