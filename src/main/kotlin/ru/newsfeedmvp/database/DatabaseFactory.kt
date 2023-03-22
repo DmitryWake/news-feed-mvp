@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.newsfeedmvp.database.table.NewsTable
+import ru.newsfeedmvp.database.table.TrustUserNewsTable
 import ru.newsfeedmvp.database.table.UserTable
 import java.io.File
 
@@ -21,6 +22,7 @@ object DatabaseFactory {
         transaction(database) {
             SchemaUtils.create(NewsTable)
             SchemaUtils.create(UserTable)
+            SchemaUtils.create(TrustUserNewsTable)
         }
     }
 

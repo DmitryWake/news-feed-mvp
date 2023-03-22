@@ -1,0 +1,8 @@
+package ru.newsfeedmvp.database.model
+
+data class TrustUserNewsEntity(
+    val id: Int?,
+    val userId: String,
+    val newsId: Int,
+    val trustValue: Boolean
+)
