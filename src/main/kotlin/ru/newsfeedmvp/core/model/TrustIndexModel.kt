@@ -1,7 +1,7 @@
 package ru.newsfeedmvp.core.model
 
 data class TrustIndexModel(
-    val totalCount: Long,
-    val trust: Long,
-    val distrust: Long
+    val totalCount: Int,
+    val trustCount: Int,
+    val distrustCount: Int
 )

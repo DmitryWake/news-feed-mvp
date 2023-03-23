@@ -44,4 +44,8 @@ class TrustUserNewsDAOFacadeImpl: TrustUserNewsDAOFacade {
         newsId = row[TrustUserNewsTable.newsId],
         trustValue = row[TrustUserNewsTable.trustValue]
     )
+
+    companion object {
+        val instance by lazy { TrustUserNewsDAOFacadeImpl() }
+    }
 }
