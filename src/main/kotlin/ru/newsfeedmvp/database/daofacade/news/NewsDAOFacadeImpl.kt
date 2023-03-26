@@ -10,6 +10,10 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
         NewsTable.select { NewsTable.sourceUrl eq sourceUrl }.map(::resultRowToNewsModel).singleOrNull()
     }
 
+    override suspend fun getPagingFeed(count: Int, offset: Long): List<NewsModel> = dbQuery {
+        NewsTable.selectAll().orderBy(NewsTable.date to SortOrder.ASC).limit(count, offset).map(::resultRowToNewsModel)
+    }
+
     override suspend fun allEntities(): List<NewsModel> = dbQuery {
         NewsTable.selectAll().map(::resultRowToNewsModel)
     }
@@ -60,4 +64,8 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
         commentsCount = row[NewsTable.commentsCount],
         reactionType = row[NewsTable.reaction]
     )
+
+    companion object {
+        val instance by lazy { NewsDAOFacadeImpl() }
+    }
 }
