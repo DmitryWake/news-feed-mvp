@@ -21,7 +21,8 @@ fun Routing.configureNewsUserScoreRouting() {
                     if (request != null) {
                         val isSuccess = NewsUserScoreRepository.instance.setScoreByUser(it.id, request.newsId, request.score)
                         if (isSuccess) {
-                            call.respond(HttpStatusCode.OK)
+                            val trustIndex = NewsUserScoreRepository.instance.getNewsTrustIndex(request.newsId)
+                            call.respond(HttpStatusCode.OK, trustIndex)
                         } else {
                             call.respond(HttpStatusCode.BadRequest)
                         }

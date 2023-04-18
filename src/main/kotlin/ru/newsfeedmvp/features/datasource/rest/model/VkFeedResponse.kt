@@ -57,9 +57,9 @@ data class VkFeedResponse(
 
     @Serializable
     data class Sizes(
-        var height: Int? = null,
+        var height: Int,
         var type: String? = null,
-        var width: Int? = null,
+        var width: Int,
         var url: String? = null
     )
 
