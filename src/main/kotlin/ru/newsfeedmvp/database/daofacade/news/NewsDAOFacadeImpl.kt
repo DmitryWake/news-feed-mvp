@@ -11,7 +11,7 @@ class NewsDAOFacadeImpl : NewsDAOFacade {
     }
 
     override suspend fun getPagingFeed(count: Int, offset: Long): List<NewsModel> = dbQuery {
-        NewsTable.selectAll().orderBy(NewsTable.date to SortOrder.DESC).limit(count, offset).map(::resultRowToNewsModel)
+        NewsTable.selectAll().orderBy(NewsTable.id to SortOrder.DESC).limit(count, offset).map(::resultRowToNewsModel)
     }
 
     override suspend fun allEntities(): List<NewsModel> = dbQuery {
