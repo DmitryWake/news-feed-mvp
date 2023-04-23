@@ -22,7 +22,10 @@ class NewsFeedInteractor {
         }
 
     suspend fun getLastNewsIds(): List<Int> =
-        newsFeedRepository.getNewsFeedPaging(10000, 0).mapNotNull { it.id }
+        newsFeedRepository.getNewsFeedPaging(10000, 0).map {
+            requireNotNull(it.id)
+        }
+
 
     companion object {
         val instance by lazy { NewsFeedInteractor() }

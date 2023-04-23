@@ -1,12 +1,16 @@
 package ru.newsfeedmvp.features.recommendation
 
 import kotlinx.coroutines.*
+import ru.newsfeedmvp.core.model.TrustIndexModel
 import ru.newsfeedmvp.database.daofacade.recommendation.RecommendationDAOFacadeImpl
 import ru.newsfeedmvp.database.model.RecommendationEntity
 import ru.newsfeedmvp.features.newsfeed.NewsFeedInteractor
 import ru.newsfeedmvp.features.newsuserscore.NewsUserScoreRepository
 import ru.newsfeedmvp.features.user.UserInteractor
+import kotlin.math.pow
+import kotlin.math.sqrt
 
+// FIXME Поделить функции и классы
 class RecommendationWorker {
 
     private val userInteractor = UserInteractor.instance
@@ -22,18 +26,23 @@ class RecommendationWorker {
                     scores.copy(userScores = scores.userScores.filter { newsIds.contains(it.key) })
                 }
             }.associate { Pair(it.userId, it.userScores) }
+            val newsTrustIndexes = newsUserScoreRepository.getNewsTrustIndexes()
 
             val cosSimilarity = calculateSimilarity(usersScores).also { println(it.values.sumOf { it.size }) }
             val nearestSimilarity = calculateNearests(cosSimilarity).also { println(it.values) }
 
             val result = nearestSimilarity.mapValues { mapEntry ->
-                calculateRecommendations(
-                    mapEntry.value,
-                    newsIds.filter { !usersScores[mapEntry.key]!!.containsKey(it) },
-                    usersScores
-                ).also { println(it) }
+                async {
+                    calculateRecommendations(
+                        mapEntry.value,
+                        newsIds.filter { !usersScores[mapEntry.key]!!.containsKey(it) },
+                        usersScores,
+                        newsTrustIndexes
+                    ).also { println(it) }
+                }
             }.mapValues { mapEntry ->
-                mapEntry.value.map { RecommendationEntity(userId = mapEntry.key, newsId = it.key, score = it.value) }
+                mapEntry.value.await()
+                    .map { RecommendationEntity(userId = mapEntry.key, newsId = it.key, score = it.value) }
             }.values.filter { it.isNotEmpty() }
 
             recommendationDAOFacadeImpl.deleteAll()
@@ -57,7 +66,7 @@ class RecommendationWorker {
                         resultMap[chosenUser.key]?.get(otherUser.key) == null &&
                         resultMap[otherUser.key]?.get(chosenUser.key) == null
                     ) {
-                        val cosSimDeffer = async { calculateCosSimilarity(chosenUser.value, otherUser.value) }
+                        val cosSimDeffer = async { calculatePirsonSimilarity(chosenUser.value, otherUser.value) }
 
                         if (resultMap.containsKey(chosenUser.key)) {
                             resultMap[chosenUser.key]!![otherUser.key] = cosSimDeffer
@@ -79,12 +88,14 @@ class RecommendationWorker {
         firstUserScores: Map<Int, Boolean>,
         secondUserScores: Map<Int, Boolean>
     ): Double {
-        val firstVector = firstUserScores.toSortedMap()
+        val firstVector = firstUserScores
             .filter { secondUserScores.containsKey(it.key) }
+            .toSortedMap()
             .map { it.value }
 
-        val secondVector = secondUserScores.toSortedMap()
+        val secondVector = secondUserScores
             .filter { firstUserScores.containsKey(it.key) }
+            .toSortedMap()
             .map { it.value }
 
         var dotValue = 0
@@ -97,6 +108,36 @@ class RecommendationWorker {
         return if (dotValue == 0) 0.0 else (dotValue / firstVector.size.toDouble())
     }
 
+    private fun calculatePirsonSimilarity(
+        firstUserScores: Map<Int, Boolean>,
+        secondUserScores: Map<Int, Boolean>
+    ): Double {
+        val firstVector = firstUserScores
+            .filter { secondUserScores.containsKey(it.key) }
+            .toSortedMap()
+            .map { if (it.value) 1 else 0 }
+
+        val secondVector = secondUserScores
+            .filter { firstUserScores.containsKey(it.key) }
+            .toSortedMap()
+            .map { if (it.value) 1 else 0 }
+
+        val firstMean = firstVector.sum().toDouble() / firstVector.size
+        val secondMean = secondVector.sum().toDouble() / secondVector.size
+
+        var topSum = 0.0
+        var firstBottomSquare = 0.0
+        var secondBottomSquare = 0.0
+
+        firstVector.forEachIndexed { index, value ->
+            topSum += (value - firstMean) * (secondVector[index] - secondMean)
+            firstBottomSquare += (value - firstMean).pow(2)
+            secondBottomSquare += (secondVector[index] - secondMean).pow(2)
+        }
+
+        return if (topSum == 0.0) 0.0 else (topSum / (sqrt(firstBottomSquare) * sqrt(secondBottomSquare)))
+    }
+
     private fun calculateNearests(data: MutableMap<String, MutableMap<String, Double>>): MutableMap<String, MutableMap<String, Double>> =
         data.mapValues { mapEntry ->
             mapEntry.value.toList().sortedByDescending { it.second }.take(NEAREST_COUNT).associate { it }.toMutableMap()
@@ -105,7 +146,8 @@ class RecommendationWorker {
     private suspend fun calculateRecommendations(
         userSimilarity: Map<String, Double>,
         uncheckedNews: List<Int>,
-        userScores: Map<String, Map<Int, Boolean>>
+        userScores: Map<String, Map<Int, Boolean>>,
+        newsTrustIndexes: Map<Int, TrustIndexModel>
     ): Map<Int, Double> = withContext(Dispatchers.Default) {
         val result = mutableMapOf<Int, Double>()
 
@@ -114,7 +156,16 @@ class RecommendationWorker {
 
             if (simUserScores.isNotEmpty()) {
                 (simUserScores.values.sum() / simUserScores.size).let {
-                    if (it > 0) result[newsId] = it
+                    val trustIndex = newsTrustIndexes[newsId]
+                    val trustValue = if (trustIndex == null) {
+                        0.0
+                    } else if (trustIndex.trustCount > trustIndex.distrustCount) {
+                        trustIndex.trustCount.toDouble() / trustIndex.totalCount
+                    } else {
+                        -1 * trustIndex.distrustCount.toDouble() / trustIndex.totalCount
+                    }
+
+                    if (it > 0 && it + trustValue > 0) result[newsId] = it + trustValue
                 }
             }
         }

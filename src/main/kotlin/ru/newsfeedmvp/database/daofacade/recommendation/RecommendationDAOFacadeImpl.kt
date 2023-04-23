@@ -7,7 +7,10 @@ import ru.newsfeedmvp.database.table.RecommendationTable
 
 class RecommendationDAOFacadeImpl : RecommendationDAOFacade {
     override suspend fun getByUser(userId: String, limit: Int, offset: Long): List<RecommendationEntity> = dbQuery {
-        RecommendationTable.select { RecommendationTable.userId eq userId }.orderBy(RecommendationTable.score to SortOrder.DESC).limit(limit, offset)
+        RecommendationTable.select { RecommendationTable.userId eq userId }
+            .orderBy(RecommendationTable.score to SortOrder.DESC)
+            .orderBy(RecommendationTable.newsId to SortOrder.DESC)
+            .limit(limit, offset)
             .map(::resultRowToRecommendationEntity)
     }
 

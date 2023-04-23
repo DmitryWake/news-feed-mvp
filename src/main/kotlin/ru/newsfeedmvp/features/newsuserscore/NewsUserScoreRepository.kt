@@ -33,6 +33,17 @@ class NewsUserScoreRepository {
         )
     }
 
+    suspend fun getNewsTrustIndexes(): Map<Int, TrustIndexModel> = withContext(Dispatchers.IO) {
+        facade.allEntities().groupBy { it.newsId }.mapValues {mapEntry ->
+            val trustCount = mapEntry.value.count { it.trustValue }
+            TrustIndexModel(
+                totalCount = mapEntry.value.size,
+                trustCount = trustCount,
+                distrustCount = mapEntry.value.size - trustCount
+            )
+        }
+    }
+
     suspend fun setScoreByUser(userId: String, newsId: Int, score: Boolean): Boolean = withContext(Dispatchers.IO) {
         facade.addNewEntity(
             TrustUserNewsEntity(
