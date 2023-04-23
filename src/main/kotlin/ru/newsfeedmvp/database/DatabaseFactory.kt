@@ -24,6 +24,7 @@ object DatabaseFactory {
             SchemaUtils.create(UserTable)
             SchemaUtils.create(TrustUserNewsTable)
             SchemaUtils.create(RecommendationTable)
+            SchemaUtils.create(UserRecommendationTable)
         }
     }
 

@@ -7,6 +7,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import ru.newsfeedmvp.features.newsuserscore.model.UserInputScoreDTO
+import ru.newsfeedmvp.features.recommendation.RecommendationRepository
 import ru.newsfeedmvp.plugins.AUTH_TYPE_BEARER
 import ru.newsfeedmvp.plugins.checkUserId
 
@@ -19,8 +20,14 @@ fun Routing.configureNewsUserScoreRouting() {
                         call.receive<UserInputScoreDTO>()
                     }.onFailure { println(it.message) }.getOrNull()
                     if (request != null) {
-                        val isSuccess = NewsUserScoreRepository.instance.setScoreByUser(it.id, request.newsId, request.score)
+                        val isSuccess =
+                            NewsUserScoreRepository.instance.setScoreByUser(it.id, request.newsId, request.score)
+
                         if (isSuccess) {
+                            if (request.isFromRecommendation) {
+                                RecommendationRepository.instance.setRecommendationScore(it.id, request.score)
+                            }
+
                             val trustIndex = NewsUserScoreRepository.instance.getNewsTrustIndex(request.newsId)
                             call.respond(HttpStatusCode.OK, trustIndex)
                         } else {
