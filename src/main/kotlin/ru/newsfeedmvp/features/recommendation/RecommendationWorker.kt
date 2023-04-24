@@ -62,10 +62,7 @@ class RecommendationWorker {
 
             userScores.forEach { chosenUser ->
                 userScores.forEach { otherUser ->
-                    if (chosenUser != otherUser &&
-                        resultMap[chosenUser.key]?.get(otherUser.key) == null &&
-                        resultMap[otherUser.key]?.get(chosenUser.key) == null
-                    ) {
+                    if (chosenUser != otherUser) {
                         val cosSimDeffer = async { calculatePirsonSimilarity(chosenUser.value, otherUser.value) }
 
                         if (resultMap.containsKey(chosenUser.key)) {
